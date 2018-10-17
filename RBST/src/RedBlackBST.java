@@ -1,3 +1,9 @@
+/*
+* Lab Name: RedBlackBST
+        * Lab Purpose: Create A BST that automatically shifts to make it the most optimized for searching
+        * Date: 10/17/18
+        * Collaborators: None
+        */
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
@@ -11,7 +17,8 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
     /**
      * Initializes an empty symbol table.
      */
-    public RedBlackBST() {
+    public RedBlackBST(Node root) {
+        this.root = root;
     }
 
     /***************************************************************************
@@ -28,7 +35,18 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
         if (x == null) return 0;
         return x.size;
     }
+    public String toString() {
+        String temp = toString(root);
+        temp = temp.substring(0, temp.length() - 2);
+        return "{" + temp + "}";
+    }
 
+    private String toString(Node<Key, Value> n) {
+        if (n == null) return "";
+        return toString(n.getLeft()) +
+                n.getKey() + "=" + n.getValue() + ", " +
+                toString(n.getRight());
+    }
 
     /**
      * Returns the number of key-value pairs in this symbol table.
@@ -69,10 +87,10 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
     // value associated with the given key in subtree rooted at x; null if no such key
     private Value get(Node x, Key key) {
         while (x != null) {
-            int cmp = key.compareTo(x.key);
+            int cmp = key.compareTo((Key)x.getKey());
             if (cmp < 0) x = x.left;
             else if (cmp > 0) x = x.right;
-            else return x.val;
+            else return (Value)x.getValue();
         }
         return null;
     }
@@ -211,17 +229,37 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
     private Node rotateRight(Node h) {
         // assert (h != null) && isRed(h.left);
         /**ROTATE RIGHT**/
-        return x;
+        Node left = h.getLeft();
+        if(h!=null && isRed(h.left)){//copied from rotateLeft
+            Node leftRight = left.getRight();
+            left.setRight(h);
+            h.setRight(leftRight);
+        }
+        return left;
     }
 
     // make a right-leaning link lean to the left
     private Node rotateLeft(Node h) {
         // assert (h != null) && isRed(h.right);
         /**ROTATE LEFT**/
-        
-        return x;
+        Node right = h.getRight();
+        if(h != null && isRed(h.right)){
+
+            Node rightLeft = right.getLeft();
+            right.setLeft(h);
+            h.setRight(rightLeft);
+
+        }
+        return right;
     }
 
+    public boolean isGParent(Node h){
+        if(h.getLeft() == null & h.getRight() == null) return false;
+        else if(h.getLeft().getLeft() == null&&h.getLeft().getRight()==null&&h.getRight().getRight()==null&&h.getRight().getLeft() == null) return false;
+        else{
+            return true;
+        }
+    }
     // flip the colors of a node and its two children
     private void flipColors(Node h) {
         // h must have opposite color of its two children
@@ -279,19 +317,32 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
         return 1 + Math.max(height(x.left), height(x.right));
     }
     public boolean isRBT(){
+
+
         return isRBT(root);
+
+
     }
     
-    public boolean isRBT(){
+    private boolean isRBT(Node h){
         /**YOUR CODE HERE**/
-        return false;
+        if(h.getLeft() == null && h.getRight() == null) return true; //keep color in mind
+        else {
+            if (h.color() == RED && h == root) return false;
+            else if (h.color() == RED && (h.getLeft().color() == RED || h.getRight().color() == RED)) return false;
+            else if (h.getLeft().getSize() != h.getRight().getSize()) return false;
+            else if (h.getLeft().getKey().compareTo(h.getRight().getKey())<0) return false;
+            else {
+                return isRBT(h.getRight()) && isRBT(h.getLeft());
+            }
+        }
     }
 
     /***************************************************************************
      *  Ordered symbol table methods.
      ***************************************************************************/
 
-    /**
+    /** hey that;s pret ty good not
      * Returns the smallest key in the symbol table.
      *
      * @return the smallest key in the symbol table
@@ -299,7 +350,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
      */
     public Key min() {
         if (isEmpty()) throw new NoSuchElementException("calls min() with empty symbol table");
-        return min(root).key;
+        return (Key)min(root).key;
     }
 
     // the smallest key in subtree rooted at x; null if no such key
@@ -317,7 +368,7 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
      */
     public Key max() {
         if (isEmpty()) throw new NoSuchElementException("calls max() with empty symbol table");
-        return max(root).key;
+        return (Key)max(root).key;
     }
 
     // the largest key in the subtree rooted at x; null if no such key
